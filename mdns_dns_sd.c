@@ -28,6 +28,9 @@
 #include <string.h>
 #include "mdns.h"
 #include "common.h"
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
 
 static DNSServiceRef service;
 
@@ -54,7 +57,7 @@ static int mdns_dns_sd_register(char *apname, int port) {
 
     for (field = record; *field; field ++)
     {
-        char * newp = stpcpy(p + 1, *field);
+        char * newp = strcpy(p + 1, *field);
         *p = newp - p - 1;
         p = newp;
     }

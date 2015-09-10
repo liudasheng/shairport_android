@@ -5,6 +5,8 @@ config.mk:
 	$(MAKE) shairport
 endif
 
+#CC := arm-linux-androideabi-gcc
+
 CFLAGS ?= -O2 -Wall
 -include config.mk
 

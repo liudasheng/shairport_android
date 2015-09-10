@@ -29,8 +29,17 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <sys/file.h>
 
 #include "common.h"
+
+/*BEGIN add by dashon, 15.9.9 */
+#define F_ULOCK 	0 //Ω‚À¯ 
+#define F_LOCK 		1 //ª•≥‚À¯∂®«¯”Ú 
+#define F_TLOCK 	2 //≤‚ ‘ª•≥‚À¯∂®«¯”Ú 
+#define F_TEST 		3 //≤‚ ‘«¯”Ú
+/*END add by dashon, 15.9.9 */
+
 
 static int lock_fd = -1;
 static int daemon_pipe[2] = {-1, -1};
@@ -74,12 +83,15 @@ void daemon_init() {
                 die("Could not open pidfile");
             }
 
+            //@dashon comment for android libc, Fixme?    
+            #if 0
             ret = lockf(lock_fd,F_TLOCK,0);
             if (ret < 0) {
                 die("Could not lock pidfile. Is an other instance running ?");
             }
 
             dprintf(lock_fd, "%d\n", getpid());
+            #endif
         }
     }
 }
@@ -94,13 +106,16 @@ void daemon_ready() {
 void daemon_fail(const char *format, va_list arg) {
     // Are we still initializing ?
     if (daemon_pipe[1] > 0) {
+        //@dashon comment for android libc, Fixme?  
+        #if 0
         vdprintf(daemon_pipe[1], format, arg);
+        #endif
     }
 }
 
 void daemon_exit() {
     if (lock_fd > 0) {
-        lockf_unchecked(lock_fd, F_ULOCK, 0);
+        //lockf_unchecked(lock_fd, F_ULOCK, 0);
         close(lock_fd);
         unlink(config.pidfile);
         lock_fd = -1;
