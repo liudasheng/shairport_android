@@ -46,6 +46,7 @@ static int mdns_dns_sd_register(char *apname, int port) {
         length += strlen(*field) + 1; // One byte for length each time
     } 
 
+    #if 0
     char *buf = malloc(length * sizeof(char));
     if (buf == NULL)
     {
@@ -54,13 +55,14 @@ static int mdns_dns_sd_register(char *apname, int port) {
     }
 
     char *p = buf;
-
     for (field = record; *field; field ++)
     {
         char * newp = strcpy(p + 1, *field);
         *p = newp - p - 1;
         p = newp;
     }
+    #endif
+    static const char TXT[] = "\x6" "tp=UDP" "\x8" "sm=false" "\x4" "ek=1" "\x6" "et=0,1" "\x6" "cn=0,1" "\x4" "ch=2" "\x5" "ss=16" "\x8" "sr=44100" "\x4" "vn=3" "\x9" "txtvers=1" "\x7" "da=true" "\x8" "md=0,1,2" "\x8" "pw=false";
 
     DNSServiceErrorType error;
     error = DNSServiceRegister(&service,
@@ -71,12 +73,12 @@ static int mdns_dns_sd_register(char *apname, int port) {
                                "",
                                NULL,
                                htons((uint16_t)port),
-                               length,
-                               buf,
+                               sizeof(TXT)-1,
+                               TXT,
                                NULL,
                                NULL);
 
-    free(buf);
+    //free(buf);
 
     if (error == kDNSServiceErr_NoError)
         return 0;
