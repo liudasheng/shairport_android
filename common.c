@@ -39,7 +39,7 @@
 
 shairport_cfg config;
 
-int debuglev = 7;
+int debuglev = 0;
 
 void die(char *format, ...) {
     fprintf(stderr, "FATAL: ");
