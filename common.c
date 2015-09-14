@@ -54,7 +54,10 @@ void die(char *format, ...) {
     va_end(args);
 
     fprintf(stderr, "\n");
+    
+    #ifndef BUILD_LIBRARY
     shairport_shutdown(1);
+    #endif
 }
 
 void warn(char *format, ...) {

@@ -7,6 +7,19 @@
 #include "audio.h"
 #include "mdns.h"
 
+#ifdef BUILD_LIBRARY
+#include <utils/Log.h>
+#define LOG_NDEBUG 0
+#define LOG_TAG "shairport"
+#define TRACE() ALOGV("[%d] %s", __LINE__, __func__)
+#else
+#define ALOGV printf
+#define ALOGD printf
+#define ALOGI printf
+#define ALOGE printf
+#endif
+
+
 // struct sockaddr_in6 is bigger than struct sockaddr. derp
 #ifdef AF_INET6
     #define SOCKADDR struct sockaddr_storage

@@ -47,6 +47,15 @@
 #include "mdns.h"
 #include "metadata.h"
 
+#ifdef BUILD_LIBRARY
+#define die ALOGE
+#else
+#define ALOGV printf
+#define ALOGD printf
+#define ALOGI printf
+#define ALOGE printf
+#endif
+
 #ifdef AF_INET6
 #define INETx_ADDRSTRLEN INET6_ADDRSTRLEN
 #else
@@ -83,9 +92,14 @@ static void rtsp_take_player(void) {
 
     if (pthread_mutex_trylock(&playing_mutex)) {
         debug(1, "shutting down playing thread\n");
+        ALOGD("shutting down playing thread\n");
         // XXX minor race condition between please_shutdown and signal delivery
         please_shutdown = 1;
+        
+        #ifndef BUILD_LIBRARY
         pthread_kill(playing_thread, SIGUSR1);
+        #endif
+        
         pthread_mutex_lock(&playing_mutex);
     }
     playing_thread = pthread_self();
@@ -850,6 +864,7 @@ static const char* format_address(struct sockaddr *fsa) {
 }
 
 void rtsp_listen_loop(void) {
+    ALOGD("%s in.", __func__);
     struct addrinfo hints, *info, *p;
     char portstr[6];
     int *sockfd = NULL;
@@ -951,6 +966,7 @@ void rtsp_listen_loop(void) {
         socklen_t slen = sizeof(conn->remote);
 
         debug(1, "new RTSP connection\n");
+        ALOGD("%s: new RTSP connection", __func__);
         conn->fd = accept(acceptfd, (struct sockaddr *)&conn->remote, &slen);
         if (conn->fd < 0) {
             perror("failed to accept connection");

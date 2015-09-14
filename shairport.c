@@ -312,6 +312,14 @@ int main(int argc, char **argv) {
     MD5_Final(ap_md5, &ctx);
     memcpy(config.hw_addr, ap_md5, sizeof(config.hw_addr));
 
+    debug(1, "shairport config:\n");
+    debug(1, "config.buffer_start_fill=%d\n", config.buffer_start_fill);
+    debug(1, "config.port=%d\n", config.port);
+    debug(1, "config.apname=%s\n", config.apname);
+    debug(1, "config.output_name=%s\n", config.output_name);
+
+    printf("audio_arg=%d\n", audio_arg);
+    
     if (config.meta_dir)
         metadata_open();
 

@@ -168,10 +168,16 @@ void rtp_shutdown(void) {
         die("rtp_shutdown called without active stream!");
 
     debug(2, "shutting down RTP thread\n");
+    ALOGD("shutting down RTP thread\n");
     please_shutdown = 1;
+    
+    #ifndef BUILD_LIBRARY
     pthread_kill(rtp_thread, SIGUSR1);
+    #endif
     void *retval;
     pthread_join(rtp_thread, &retval);
+    //
+    
     running = 0;
 }
 
