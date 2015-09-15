@@ -68,5 +68,5 @@ shairport: $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS) -o shairport
 
 clean:
-	rm -f shairport version.h
+	rm -f shairport
 	rm -f $(OBJS)
