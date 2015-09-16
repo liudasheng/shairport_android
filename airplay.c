@@ -26,10 +26,10 @@
 
 //#define LOG_NDEBUG 0
 //#define LOG_TAG "shairport"
-#include <utils/Log.h>
+//#include <utils/Log.h>
 #include <cutils/properties.h>
 
-#include "shairport_lib.h"
+#include "airplay.h"
 
 #include <signal.h>
 #include <unistd.h>
@@ -112,6 +112,7 @@ static void log_setup() {
 
 static char airplay_apname[128];
 static pthread_t rtsp_thread;
+static int shairport_running = 0;
 
 static void *rtsp_listen_thread(void *arg) 
 {
@@ -121,13 +122,19 @@ static void *rtsp_listen_thread(void *arg)
     return NULL;
 }
 
-int start_shairport(void) 
+static int start_shairport(void) 
 {
     ALOGD("%s in.", __func__);
 
     shutting_down = 0;
 
-    //signal_setup();
+    if(1 == shairport_running)
+    {
+        ALOGI("shairport is already running!");
+        return 0;
+    }
+    shairport_running = 1;
+
     memset(&config, 0, sizeof(config));
 
     // set defaults
@@ -186,19 +193,28 @@ int start_shairport(void)
         return ret;
     }
 
+    send_event(MEDIA_PREPARED, 0, 0);
+
     ALOGD("success to creat rtsp_listen_thread!");
 
-    // should not.
-    //shairport_shutdown(1);
     ALOGD("%s ok.", __func__);
     return 0;
 }
 
-int stop_shairport(void)
+static int stop_shairport(void)
 {
     ALOGD("%s in.", __func__);
+
+    if(0 == shairport_running)
+    {
+        ALOGI("shairport is already stoped!");
+        return 0;
+    }
+    shairport_running = 0;
     
     shairport_shutdown(0);
+
+    send_event(MEDIA_STOPPED, 0, 0);
     
     #ifndef BUILD_LIBRARY
     pthread_kill(rtsp_thread, SIGUSR1);
@@ -211,7 +227,7 @@ int stop_shairport(void)
     return 0;
 }
 
-int set_shairport_hostname(const char * apname)
+static int set_shairport_hostname(const char * apname)
 {
 
     if(NULL == apname)
@@ -224,7 +240,7 @@ int set_shairport_hostname(const char * apname)
     return 0;
 }
 
-int get_shairport_hostname(char * apname)
+static int get_shairport_hostname(char * apname)
 {
 
     if(NULL == apname)
@@ -237,8 +253,45 @@ int get_shairport_hostname(char * apname)
     return 0;
 }
 
-mConnectStatus_t get_connect_status(void)
+
+static airplay_notify_cb airplay_notify = NULL;
+int register_airplay_notify(const airplay_notify_cb notify_fn)
 {
-    return CLIENT_DISCONNECTED;
+    if (notify_fn)
+        airplay_notify = notify_fn;
+
+    return 0;
+}
+
+int send_event(int msg, int ext1, int ext2)
+{
+    ALOGV("%s: msg=%d, ext1=%d, ext2=%d", __func__, msg, ext1, ext2);
+
+    if(airplay_notify)
+    {
+        ALOGD("%s: msg=%d, ext1=%d, ext2=%d", __func__, msg, ext1, ext2);
+        airplay_notify(msg, ext1, ext2);
+    }
+    return 0;
+}
+
+int start_airplay(void)
+{
+    return start_shairport();
+}
+    
+int stop_airplay(void)
+{
+    return stop_shairport();
+}
+
+int set_airplay_hostname(const char *apname)
+{
+    return set_shairport_hostname(apname);
+}
+
+int get_airplay_hostname(char *apname)
+{
+    return get_shairport_hostname(apname);
 }
 

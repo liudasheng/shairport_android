@@ -8,9 +8,9 @@
 #include "mdns.h"
 
 #ifdef BUILD_LIBRARY
-#include <utils/Log.h>
 #define LOG_NDEBUG 0
 #define LOG_TAG "shairport"
+#include <utils/Log.h>
 #define TRACE() ALOGV("[%d] %s", __LINE__, __func__)
 #else
 #define ALOGV printf

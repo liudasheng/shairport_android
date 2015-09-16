@@ -29,19 +29,19 @@
 #include <utils/Log.h>
 #include <cutils/properties.h>
 
-#include "shairport_lib.h"
+#include "airplay.h"
 
 int main(int argc, char **argv) 
 {
     while(1)
     {
         printf("start_shairport\n");
-        start_shairport();
+        start_airplay();
 
         sleep(20);
 
         printf("stop_shairport\n");
-        stop_shairport();
+        stop_airplay();
 
         sleep(3);
     }

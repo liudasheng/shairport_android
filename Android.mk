@@ -62,7 +62,7 @@ include $(BUILD_EXECUTABLE)
 #########################
 ifeq ($(strip $(CONFIG_BUILD_LIBRARY)),true)
 include $(CLEAR_VARS)
-LOCAL_SRC_FILES := shairport_lib.c \
+LOCAL_SRC_FILES := airplay.c \
                    daemon.c \
                    rtsp.c \
 				   rtp.c \
