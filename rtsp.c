@@ -939,6 +939,10 @@ void rtsp_listen_loop(void) {
         tv.tv_sec = 300;
         tv.tv_usec = 0;
 
+        #ifdef BUILD_LIBRARY
+        send_event(MEDIA_INFO, MEDIA_INFO_UNKNOWN, 0);
+        #endif
+
         for (i=0; i<nsock; i++)
             FD_SET(sockfd[i], &fds);
 
@@ -967,6 +971,11 @@ void rtsp_listen_loop(void) {
 
         debug(1, "new RTSP connection\n");
         ALOGD("%s: new RTSP connection", __func__);
+        
+        #ifdef BUILD_LIBRARY
+        send_event(MEDIA_STARTED, 0, 0);
+        #endif
+        
         conn->fd = accept(acceptfd, (struct sockaddr *)&conn->remote, &slen);
         if (conn->fd < 0) {
             perror("failed to accept connection");

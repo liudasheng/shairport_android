@@ -12,13 +12,14 @@
 #define LOG_TAG "shairport"
 #include <utils/Log.h>
 #define TRACE() ALOGV("[%d] %s", __LINE__, __func__)
+#include "airplay.h"
+extern int send_event(int msg, int ext1, int ext2);
 #else
 #define ALOGV printf
 #define ALOGD printf
 #define ALOGI printf
 #define ALOGE printf
 #endif
-
 
 // struct sockaddr_in6 is bigger than struct sockaddr. derp
 #ifdef AF_INET6

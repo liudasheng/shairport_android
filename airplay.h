@@ -131,7 +131,6 @@ int stop_airplay(void);
 int set_airplay_hostname(const char *apname);
 int get_airplay_hostname(char *apname);
 int register_airplay_notify(const airplay_notify_cb notify_fn);
-//int send_event(int msg, int ext1, int ext2);
 
 
 #ifdef __cplusplus
