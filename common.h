@@ -11,7 +11,8 @@
 #define LOG_NDEBUG 0
 #define LOG_TAG "shairport"
 #include <utils/Log.h>
-#define TRACE() ALOGV("[%d] %s", __LINE__, __func__)
+#define printf ALOGD 
+#define TRACE() ALOGV("[%d] %s\n", __LINE__, __func__)
 #include "airplay.h"
 extern int send_event(int msg, int ext1, int ext2);
 #else
@@ -19,6 +20,7 @@ extern int send_event(int msg, int ext1, int ext2);
 #define ALOGD printf
 #define ALOGI printf
 #define ALOGE printf
+#define TRACE() printf("[%d] %s\n", __LINE__, __func__)
 #endif
 
 // struct sockaddr_in6 is bigger than struct sockaddr. derp

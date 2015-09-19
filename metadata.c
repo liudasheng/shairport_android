@@ -38,6 +38,11 @@
 #include "common.h"
 #include "metadata.h"
 
+#ifdef BUILD_LIBRARY
+#include "airplay.h"
+MetaData_t gMetaData;
+#endif
+
 metadata player_meta;
 static int fd = -1;
 static int dirty = 0;

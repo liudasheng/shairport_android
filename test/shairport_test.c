@@ -24,26 +24,58 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#define LOG_NDEBUG 0
-#define LOG_TAG "shairport"
+//#define LOG_NDEBUG 0
+//#define LOG_TAG "shairport"
 #include <utils/Log.h>
 #include <cutils/properties.h>
 
 #include "airplay.h"
 
+MetaData_t MetaData;
+
+int notify(int msg, int ext1, int ext2)
+{
+    printf("notify: msg=%d, ext1=%d, ext2=%d\n", msg, ext1, ext2);
+    switch(msg)
+    {
+        case MEDIA_INFO:
+            switch(ext1)
+            {
+                case MEDIA_INFO_METADATA_UPDATE:
+                    memset(&MetaData, 0, sizeof(MetaData_t));
+                    get_metadata(&MetaData);
+                    printf("META album: %s\n", MetaData.album);
+                    printf("META artist: %s\n", MetaData.artist);
+                    printf("META genre: %s\n", MetaData.genre);
+                    printf("META title: %s\n", MetaData.title);
+                    break;
+                default:
+                    break;
+            }
+
+        default:
+            break;
+    }
+    return 0;    
+}
+
 int main(int argc, char **argv) 
 {
+    register_airplay_notify(notify);
+
+    start_airplay();
+    
     while(1)
     {
-        printf("start_shairport\n");
-        start_airplay();
+        //printf("start_shairport\n");
+        //start_airplay();
 
-        sleep(20);
+        //sleep(20);
 
-        printf("stop_shairport\n");
-        stop_airplay();
+        //printf("stop_shairport\n");
+        //stop_airplay();
 
-        sleep(3);
+        sleep(1);
     }
     
     return 0;

@@ -57,6 +57,7 @@ static mdns_backend *mdns_backends[] = {
 };
 
 void mdns_register(void) {
+    TRACE();
     char *mdns_apname = malloc(strlen(config.apname) + 14);
     char *p = mdns_apname;
     int i;
@@ -104,6 +105,7 @@ void mdns_register(void) {
 }
 
 void mdns_unregister(void) {
+    TRACE();
     if (config.mdns) {
         config.mdns->mdns_unregister();
     }

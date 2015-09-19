@@ -381,7 +381,7 @@ static short *buffer_get_frame(void) {
 
     abuf_t *curframe = audio_buffer + BUFIDX(read);
     if (!curframe->ready) {
-        debug(1, "missing frame %04X.", read);
+        debug(2, "missing frame %04X.", read);
         memset(curframe->data, 0, FRAME_BYTES(frame_size));
     }
     curframe->ready = 0;
@@ -430,6 +430,7 @@ static int stuff_buffer(double playback_rate, short *inptr, short *outptr) {
 }
 
 static void *player_thread_func(void *arg) {
+    TRACE();
     int play_samples;
 
     signed short *inbuf, *outbuf, *silence;
@@ -484,6 +485,8 @@ static void *player_thread_func(void *arg) {
 
 // takes the volume as specified by the airplay protocol
 void player_volume(double f) {
+    TRACE();
+    ALOGD("player_volume: %d\n", f);
     double linear_volume = pow(10.0, 0.05*f);
 
     if (config.output->volume) {
@@ -496,12 +499,14 @@ void player_volume(double f) {
     }
 }
 void player_flush(void) {
+    TRACE();
     pthread_mutex_lock(&ab_mutex);
     ab_resync();
     pthread_mutex_unlock(&ab_mutex);
 }
 
 int player_play(stream_cfg *stream) {
+    TRACE();
     if (config.buffer_start_fill > BUFFER_FRAMES)
         die("specified buffer starting fill %d > buffer size %d",
             config.buffer_start_fill, BUFFER_FRAMES);
@@ -524,6 +529,7 @@ int player_play(stream_cfg *stream) {
 }
 
 void player_stop(void) {
+    TRACE();
     please_stop = 1;
     pthread_join(player_thread, NULL);
     config.output->stop();

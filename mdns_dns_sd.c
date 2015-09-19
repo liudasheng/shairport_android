@@ -35,6 +35,7 @@
 static DNSServiceRef service;
 
 static int mdns_dns_sd_register(char *apname, int port) {
+    TRACE();
     const char *record[] = { MDNS_RECORD, NULL };
     uint16_t length = 0;
     const char **field;
@@ -90,6 +91,7 @@ static int mdns_dns_sd_register(char *apname, int port) {
 }
 
 static void mdns_dns_sd_unregister(void) {
+    TRACE();
     if (service)
     {
         DNSServiceRefDeallocate(service);

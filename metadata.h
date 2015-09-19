@@ -19,4 +19,9 @@ void metadata_cover_image(const char *buf, int len, const char *ext);
 
 extern metadata player_meta;
 
+#ifdef BUILD_LIBRARY
+extern MetaData_t gMetaData;
+#endif
+
+
 #endif // _METADATA_H

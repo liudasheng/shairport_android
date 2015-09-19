@@ -76,6 +76,7 @@ static void help(void) {
 }
 
 static int init(int argc, char **argv) {
+    TRACE();
     int hardware_mixer = 0;
 
     optind = 1; // optind=0 is equivalent to optind=1 plus special behaviour
@@ -144,6 +145,7 @@ static int init(int argc, char **argv) {
 }
 
 static void deinit(void) {
+    TRACE();
     stop();
     if (alsa_mix_handle) {
         snd_mixer_close(alsa_mix_handle);
@@ -151,6 +153,7 @@ static void deinit(void) {
 }
 
 static void start(int sample_rate) {
+    TRACE();
     if (sample_rate != 44100)
         die("Unexpected sample rate!");
 
@@ -173,6 +176,7 @@ static void start(int sample_rate) {
 }
 
 static void play(short buf[], int samples) {
+    //TRACE();
     int err = snd_pcm_writei(alsa_handle, (char*)buf, samples);
     if (err < 0)
         err = snd_pcm_recover(alsa_handle, err, 0);
@@ -181,6 +185,7 @@ static void play(short buf[], int samples) {
 }
 
 static void stop(void) {
+    TRACE();
     if (alsa_handle) {
         snd_pcm_drain(alsa_handle);
         snd_pcm_close(alsa_handle);
@@ -189,6 +194,7 @@ static void stop(void) {
 }
 
 static void volume(double vol) {
+    TRACE();
     long alsa_volume = (vol*alsa_mix_range)+alsa_mix_minv;
     if(snd_mixer_selem_set_playback_volume_all(alsa_mix_elem, alsa_volume) != 0)
         die ("Failed to set playback volume");

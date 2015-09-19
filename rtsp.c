@@ -385,15 +385,21 @@ static void handle_options(rtsp_conn_info *conn,
 
 static void handle_teardown(rtsp_conn_info *conn,
                             rtsp_message *req, rtsp_message *resp) {
+    TRACE();                        
     if (!rtsp_playing())
         return;
     resp->respcode = 200;
     msg_add_header(resp, "Connection", "close");
     please_shutdown = 1;
+    
+    #ifdef BUILD_LIBRARY
+    send_event(MEDIA_PAUSED, 0, 0);
+    #endif      
 }
 
 static void handle_flush(rtsp_conn_info *conn,
                          rtsp_message *req, rtsp_message *resp) {
+    TRACE();                     
     if (!rtsp_playing())
         return;
     player_flush();
@@ -402,6 +408,7 @@ static void handle_flush(rtsp_conn_info *conn,
 
 static void handle_setup(rtsp_conn_info *conn,
                          rtsp_message *req, rtsp_message *resp) {
+    TRACE();                     
     int cport, tport;
     char *hdr = msg_get_header(req, "Transport");
     if (!hdr)
@@ -440,6 +447,10 @@ static void handle_setup(rtsp_conn_info *conn,
 
 static void handle_ignore(rtsp_conn_info *conn,
                           rtsp_message *req, rtsp_message *resp) {
+    TRACE();
+    #ifdef BUILD_LIBRARY
+    send_event(MEDIA_STARTED, 0, 0);
+    #endif    
     resp->respcode = 200;
 }
 
@@ -455,6 +466,11 @@ static void handle_set_parameter_parameter(rtsp_conn_info *conn,
         if (!strncmp(cp, "volume: ", 8)) {
             float volume = atof(cp + 8);
             debug(1, "volume: %f\n", volume);
+            
+            #ifdef BUILD_LIBRARY
+            send_event(MEDIA_INFO, MEDIA_INFO_VOLUME_CONFIG, volume);
+            #endif  
+            
             player_volume(volume);
         } else if(!strncmp(cp, "progress: ", 10)) {
             char *progress = cp + 10;
@@ -473,6 +489,11 @@ static void handle_set_parameter_metadata(rtsp_conn_info *conn,
     int cl   = req->contentlength;
 
     unsigned int off = 8;
+
+    TRACE();
+    #ifdef BUILD_LIBRARY
+    memset(&gMetaData, 0, sizeof(gMetaData));
+    #endif
 
     while (off < cl) {
         char tag[5];
@@ -493,22 +514,41 @@ static void handle_set_parameter_metadata(rtsp_conn_info *conn,
         if (!strncmp(tag, "asal ", 4)) {
             debug(1, "META Album: %s\n", val);
             metadata_set(&player_meta.album, val);
+            #ifdef BUILD_LIBRARY
+            strncpy(gMetaData.album, val, META_MAX_LEN);
+            #endif
         } else if (!strncmp(tag, "asar ", 4)) {
             debug(1, "META Artist: %s\n", val);
             metadata_set(&player_meta.artist, val);
+            #ifdef BUILD_LIBRARY
+            strncpy(gMetaData.artist, val, META_MAX_LEN);
+            #endif
         } else if (!strncmp(tag, "ascm ", 4)) {
             debug(1, "META Comment: %s\n", val);
             metadata_set(&player_meta.comment, val);
+            #ifdef BUILD_LIBRARY
+            strncpy(gMetaData.comment, val, META_MAX_LEN);
+            #endif
         } else if (!strncmp(tag, "asgn ", 4)) {
             debug(1, "META Genre: %s\n", val);
             metadata_set(&player_meta.genre, val);
+            #ifdef BUILD_LIBRARY
+            strncpy(gMetaData.genre, val, META_MAX_LEN);
+            #endif
         } else if (!strncmp(tag, "minm ", 4)) {
             debug(1, "META Title: %s\n", val);
             metadata_set(&player_meta.title, val);
+            #ifdef BUILD_LIBRARY
+            strncpy(gMetaData.title, val, META_MAX_LEN);
+            #endif
         }
 
         free(val);
     }
+
+    #ifdef BUILD_LIBRARY
+    send_event(MEDIA_INFO, MEDIA_INFO_METADATA_UPDATE, 0);
+    #endif      
 
     metadata_write();
 }
@@ -799,6 +839,8 @@ static void *rtsp_conversation_thread_func(void *pconn) {
     sigaddset(&set, SIGUSR1);
     pthread_sigmask(SIG_UNBLOCK, &set, NULL);
 
+    TRACE();
+
     rtsp_conn_info *conn = pconn;
 
     rtsp_message *req, *resp;
@@ -907,6 +949,7 @@ void rtsp_listen_loop(void) {
             continue;
         }
         debug(1, "Bound to address %s\n", format_address(p->ai_addr));
+        ALOGD("Bound to address %s\n", format_address(p->ai_addr));
 
         listen(fd, 5);
         nsock++;
@@ -933,15 +976,15 @@ void rtsp_listen_loop(void) {
     printf("Listening for connections.\n");
     shairport_startup_complete();
 
+    #ifdef BUILD_LIBRARY
+    send_event(MEDIA_PREPARED, 0, 0);
+    #endif
+
     int acceptfd;
     struct timeval tv;
     while (1) {
         tv.tv_sec = 300;
         tv.tv_usec = 0;
-
-        #ifdef BUILD_LIBRARY
-        send_event(MEDIA_INFO, MEDIA_INFO_UNKNOWN, 0);
-        #endif
 
         for (i=0; i<nsock; i++)
             FD_SET(sockfd[i], &fds);
@@ -971,10 +1014,6 @@ void rtsp_listen_loop(void) {
 
         debug(1, "new RTSP connection\n");
         ALOGD("%s: new RTSP connection", __func__);
-        
-        #ifdef BUILD_LIBRARY
-        send_event(MEDIA_STARTED, 0, 0);
-        #endif
         
         conn->fd = accept(acceptfd, (struct sockaddr *)&conn->remote, &slen);
         if (conn->fd < 0) {

@@ -193,8 +193,6 @@ static int start_shairport(void)
         return ret;
     }
 
-    send_event(MEDIA_PREPARED, 0, 0);
-
     ALOGD("success to creat rtsp_listen_thread!");
 
     ALOGD("%s ok.", __func__);
@@ -235,7 +233,8 @@ static int set_shairport_hostname(const char * apname)
         ALOGE("apname is a null poiter!");
         return 1;
     }
-    
+
+    ALOGD("%s: apname=%s\n", __func__, apname);
     property_set(AIRPLAY_NAME_PROPERTY, apname);
     return 0;
 }
@@ -250,6 +249,7 @@ static int get_shairport_hostname(char * apname)
     }
     
     property_get(AIRPLAY_NAME_PROPERTY, apname, AIRPLAY_HOST_NAME);
+    ALOGD("%s: apname=%s\n", __func__, apname);
     return 0;
 }
 
@@ -265,7 +265,7 @@ int register_airplay_notify(const airplay_notify_cb notify_fn)
 
 int send_event(int msg, int ext1, int ext2)
 {
-    ALOGV("%s: msg=%d, ext1=%d, ext2=%d", __func__, msg, ext1, ext2);
+    //ALOGV("%s: msg=%d, ext1=%d, ext2=%d", __func__, msg, ext1, ext2);
 
     if(airplay_notify)
     {
@@ -293,5 +293,26 @@ int set_airplay_hostname(const char *apname)
 int get_airplay_hostname(char *apname)
 {
     return get_shairport_hostname(apname);
+}
+
+int get_metadata(MetaData_t *MetaData)
+{
+    TRACE();
+    if(NULL == MetaData)
+    {
+        ALOGE("MetaData is null!\n");
+        return -1;
+    }
+    
+    memset(MetaData, 0, sizeof(MetaData));
+
+    memcpy(MetaData, &gMetaData, sizeof(MetaData_t));
+
+    ALOGD("META album: %s\n", MetaData->album);
+    ALOGD("META artist: %s\n", MetaData->artist);
+    ALOGD("META genre: %s\n", MetaData->genre);
+    ALOGD("META title: %s\n", MetaData->title);
+    
+    return 0;
 }
 
