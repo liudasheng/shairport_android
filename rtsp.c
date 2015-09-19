@@ -120,6 +120,7 @@ static void track_thread(rtsp_conn_info *conn) {
 }
 
 static void cleanup_threads(void) {
+    TRACE();
     void *retval;
     int i;
     debug(2, "culling threads.\n");

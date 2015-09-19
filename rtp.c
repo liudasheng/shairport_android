@@ -173,10 +173,11 @@ void rtp_shutdown(void) {
     
     #ifndef BUILD_LIBRARY
     pthread_kill(rtp_thread, SIGUSR1);
-    #endif
     void *retval;
     pthread_join(rtp_thread, &retval);
-    //
+    #endif
+
+    TRACE();
     
     running = 0;
 }
